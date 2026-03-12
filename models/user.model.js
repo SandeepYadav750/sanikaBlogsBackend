@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
     },
-    instgram: { type: String,  default: ""    },
+    instagram: { type: String,  default: ""    },
     twitter: { type: String, default: ""  },
     linkedin: { type: String,  default: ""   },
     facebook: { type: String, default: ""    },
