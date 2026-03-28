@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./Database/db.js";
 import userRoute from "./routes/user.route.js";
+import blogRoute from "./routes/blog.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -18,6 +19,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/user", userRoute);
+app.use("/api/blog", blogRoute);
 
 const PORT = process.env.PORT || 3000;
 connectDB().then(() => {

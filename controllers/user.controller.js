@@ -104,26 +104,41 @@ export const logout = async (req, res) => {
     res.status(500).json({ message: "Failed to log out user" });
   }
 };
-
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.id;
-    const {firstName, lastName, occupation, bio, instagram, twitter, facebook,linkedin } = req.body;
+    const {
+      firstName,
+      lastName,
+      occupation,
+      bio,
+      instagram,
+      twitter,
+      facebook,
+      linkedin,
+    } = req.body;
+
     const file = req.file;
 
-    const fileUri = dataURI(file);
+    let photoURL;
 
-    // Upload an image
-    const uploadResult = await cloudinary.uploader.upload(fileUri).catch((error) => {
-        console.log(error);
-    });
-    
-    console.log(uploadResult);
+    if (file) {
+      const fileUri = dataURI(file);
 
-    const user = await User.findByIdAndUpdate(userId).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "User not found", success: false });
+      const uploadResult = await cloudinary.uploader.upload(fileUri);
+
+      photoURL = uploadResult.secure_url;
     }
+
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (occupation) user.occupation = occupation;
@@ -132,13 +147,22 @@ export const updateProfile = async (req, res) => {
     if (twitter) user.twitter = twitter;
     if (facebook) user.facebook = facebook;
     if (linkedin) user.linkedin = linkedin;
-    if (file) user.photoURL = uploadResult.secure_url;
+    if (photoURL) user.photoURL = photoURL;
 
     await user.save();
 
-    res.status(200).json({ message: "Profile updated successfully", success: true, user });
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      success: true,
+      user,
+    });
   } catch (error) {
-    console.error("Error fetching user profile:", error);
-    res.status(500).json({ message: "Failed to update user profile", success: false });
+    console.error("Error updating user profile:", error);
+
+    return res.status(500).json({
+      message: "Failed to update user profile",
+      success: false,
+    });
   }
 };
+
