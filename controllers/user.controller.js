@@ -70,20 +70,22 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "1d", // token expires in 1 day
     });
 
     return res
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000, // 1days
+        // maxAge: 60 * 1000, // 1 minute
         sameSite: "strict",
       })
       .json({
         success: true,
         message: `${user.firstName} logged in successfully`,
         user,
+        token,
       });
   } catch (error) {
     console.error("Error logging in user:", error);
@@ -98,7 +100,11 @@ export const logout = async (req, res) => {
       .cookie("token", "", {
         maxAge: 0,
       })
-      .json({ success: true, message: `User logged out successfully` });
+      .json({
+        success: true,
+        message: `User logged out successfully`,
+        token: null,
+      });
   } catch (error) {
     console.error("Error logging out user:", error);
     res.status(500).json({ message: "Failed to log out user" });
@@ -166,3 +172,22 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password"); // exclude password field
+
+    res.status(200).json({
+      success: true,
+      message: "User list fetched successfully",
+      total: users.length,
+      users,
+    });
+  } catch (error) {
+    console.error("Error fetching user list:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+    });
+  }
+};

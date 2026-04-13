@@ -184,8 +184,6 @@ export const togglePublishedBlog = async (req, res) => {
     // const { publish } = req.query;
 
     const blog = await Blog.findById(id);
-    console.log("id", id);
-    // console.log("publish",publish)
 
     if (!blog) {
       res.status(404).json({ message: "Blog not found" });
@@ -197,7 +195,7 @@ export const togglePublishedBlog = async (req, res) => {
     const statusMessage = blog.isPublished ? "Published" : "UnPublished";
     return res
       .status(200)
-      .json({ success: true, message: `Blog is ${statusMessage}` });
+      .json({ success: true, message: `Blog is ${statusMessage}`, blog });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "failed to get isPublished blogs" });
