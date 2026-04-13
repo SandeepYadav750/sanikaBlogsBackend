@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: ["http://localhost:3000", "http://169.254.83.107:3000", 'https://sanika-blogs.vercel.app'],
   methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
   credentials: true,
 };
