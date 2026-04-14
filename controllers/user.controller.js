@@ -70,23 +70,56 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d", // token expires in 1 day
+      expiresIn: "7d", // token expires in 7 days
     });
+
+    // FIXED: Cookie options for cross-domain production
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true, // Required for HTTPS
+      sameSite: "none", // Required for cross-site requests
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+      // REMOVE domain: ".onrender.com" - Let it be automatic
+    };
+
+    // Log to debug
+    console.log("Setting cookie with options:", cookieOptions);
+    console.log("Frontend origin:", req.headers.origin);
 
     return res
       .status(200)
-      .cookie("token", token, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 1days
-        // maxAge: 60 * 1000, // 1 minute
-        sameSite: "strict",
-      })
+      .cookie("token", token, cookieOptions)
       .json({
         success: true,
         message: `${user.firstName} logged in successfully`,
-        user,
-        token,
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          photoURL: user.photoURL,
+        },
+        token, // Send token in response as well for backup
       });
+
+    // return res
+    //   .status(200)
+    //   .cookie("token", token, {
+    //     httpOnly: true, // Prevents XSS attacks
+    //     secure: true, // Required for HTTPS (Render uses HTTPS)
+    //     sameSite: "none", // CRITICAL: Allows cross-origin requests
+    //     // maxAge: 60 * 1000, // 1 minute
+    //     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    //     path: "/",
+    //     domain: ".onrender.com", // For Render backend
+    //   })
+    //   .json({
+    //     success: true,
+    //     message: `${user.firstName} logged in successfully`,
+    //     user,
+    //     token,
+    //   });
   } catch (error) {
     console.error("Error logging in user:", error);
     res.status(500).json({ message: "Failed to log in user" });
@@ -98,7 +131,11 @@ export const logout = async (req, res) => {
     return res
       .status(200)
       .cookie("token", "", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
         maxAge: 0,
+        path: "/",
       })
       .json({
         success: true,
@@ -191,3 +228,15 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+// Add this route to verify authentication
+
+export const getVerify = async (req, res) => {
+  try {
+    const user = await User.findById(req.id).select("-password");
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ message: "Verification failed" });
+  }
+};
+

@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, logout, updateProfile, getAllUsers } from "../controllers/user.controller.js";
+import { register, login, logout, updateProfile, getAllUsers, getVerify } from "../controllers/user.controller.js";
 import { singleUpload } from "../middleware/multer.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
 
@@ -10,5 +10,7 @@ router.post("/login", login);
 router.get("/logout", logout);
 router.put("/profile/update", isAuthenticated, singleUpload, updateProfile);
 router.get("/all-users", getAllUsers);
+router.get("/verify", isAuthenticated, getVerify);
+
 
 export default router;
