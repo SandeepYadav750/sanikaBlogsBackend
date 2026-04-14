@@ -9,16 +9,29 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "http://169.254.83.107:3000",
-    "https://sanika-blogs.vercel.app",
-    "https://sanikablogsbackend-1.onrender.com",
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://169.254.83.107:3000",
+      "https://sanika-blogs.vercel.app",
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log("Blocked origin:", origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // THIS IS CRITICAL - allows cookies
   methods: ["GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   exposedHeaders: ["Set-Cookie"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 
 const app = express();
