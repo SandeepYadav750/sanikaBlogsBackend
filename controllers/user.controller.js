@@ -99,6 +99,12 @@ export const login = async (req, res) => {
           lastName: user.lastName,
           email: user.email,
           photoURL: user.photoURL,
+          bio: user.bio,
+          occupation: user.occupation,
+          instagram: user.instagram,
+          twitter: user.twitter,
+          linkedin: user.linkedin,
+          facebook: user.facebook,
         },
         token, // Send token in response as well for backup
       });
@@ -239,4 +245,3 @@ export const getVerify = async (req, res) => {
     res.status(500).json({ message: "Verification failed" });
   }
 };
-
