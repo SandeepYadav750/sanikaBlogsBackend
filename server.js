@@ -4,6 +4,7 @@ import connectDB from "./Database/db.js";
 import userRoute from "./routes/user.route.js";
 import blogRoute from "./routes/blog.route.js";
 import commentRoute from "./routes/comment.route.js";
+import categoryRoute from "./routes/category.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -15,15 +16,15 @@ const corsOptions = {
       "http://169.254.83.107:3000",
       "https://sanika-blogs.vercel.app",
     ];
-    
+
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log("Blocked origin:", origin);
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true, // THIS IS CRITICAL - allows cookies
@@ -42,6 +43,7 @@ app.use(cookieParser());
 app.use("/api/user", userRoute);
 app.use("/api/blog", blogRoute);
 app.use("/api/comment", commentRoute);
+app.use("/api/category", categoryRoute);
 
 const PORT = process.env.PORT || 3000;
 connectDB().then(() => {

@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     },
     occupation: {    
         type: String,
-        default: "Not specified",
+        default: "Content Writer",
     },
     photoURL: {
         type: String,

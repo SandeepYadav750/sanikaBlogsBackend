@@ -109,7 +109,7 @@ export const listBlog = async (req, res) => {
 
     const blogs = await Blog.find({ author: userId }).populate({
       path: "author",
-      select: "firstName lastName photoURL",
+      select: "firstName lastName photoURL occupation",
     });
 
     if (!blogs) {
@@ -165,7 +165,7 @@ export const getPublishedBlog = async (_, res) => {
       .sort({ createdAt: -1 })
       .populate({
         path: "author",
-        select: "firstName lastName photoURL",
+        select: "firstName lastName photoURL occupation",
       });
 
     if (!blogs) {
