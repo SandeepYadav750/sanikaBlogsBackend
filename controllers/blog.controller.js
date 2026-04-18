@@ -2,9 +2,31 @@ import Blog from "../models/blog.model.js";
 import cloudinary from "../utils/cloudinary.js";
 import dataURI from "../utils/dataURI.js";
 
+// ✅ Helper function to generate unique slug
+async function generateUniqueSlug(title) {
+  let baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .substring(0, 80);
+
+  let slug = baseSlug;
+  let counter = 1;
+
+  // Check if slug exists
+  let existingBlog = await Blog.findOne({ slug });
+  while (existingBlog) {
+    slug = `${baseSlug}-${counter}`;
+    existingBlog = await Blog.findOne({ slug });
+    counter++;
+  }
+
+  return slug;
+}
+
 export const createBlog = async (req, res) => {
   try {
-    const { title, subtitle, description, category, isPublished } = req.body;
+    const { title, description, category, isPublished } = req.body;
     const author = req.id;
 
     // Validate required fields
@@ -25,14 +47,17 @@ export const createBlog = async (req, res) => {
       thumbImage = await cloudinary.uploader.upload(fileUri);
     }
 
+    // ✅ Generate unique slug
+    const slug = await generateUniqueSlug(title);
+
     const blog = await Blog.create({
       title,
-      subtitle,
+      slug, // ← Generated slug
       description,
       thumbnail: thumbImage?.secure_url,
       author: author,
       category,
-      isPublished, // Default value if not provided
+      isPublished,
     });
 
     return res.status(201).json({
@@ -55,10 +80,7 @@ export const updateBlog = async (req, res) => {
     const blogId = req.params.blogId;
     const file = req.file;
 
-    const title = req.body?.title;
-    const subtitle = req.body?.subtitle;
-    const description = req.body?.description;
-    const category = req.body?.category;
+    const { title, description, category } = req.body;
 
     const blog = await Blog.findById(blogId);
     if (!blog) {
@@ -73,9 +95,15 @@ export const updateBlog = async (req, res) => {
       thumbImage = await cloudinary.uploader.upload(fileUri);
     }
 
+    // ✅ Generate new slug if title changed
+    let slug = blog.slug;
+    if (title && title !== blog.title) {
+      slug = await generateUniqueSlug(title, blogId);
+    }
+
     const updateData = {
       title,
-      subtitle,
+      slug,
       description,
       category,
       thumbnail: thumbImage?.secure_url,
@@ -83,12 +111,14 @@ export const updateBlog = async (req, res) => {
     };
 
     const blogData = await Blog.findByIdAndUpdate(blogId, updateData, {
-      returnDocument: "after",
+      new: true, // ✅ Use 'new' instead of 'returnDocument' (mongoose standard)
     });
 
-    res
-      .status(200)
-      .json({ blog, success: true, message: "Blog updated successfully" });
+    res.status(200).json({
+      blog: blogData,
+      success: true,
+      message: "Blog updated successfully",
+    });
   } catch (error) {
     console.error("Error updating blog:", error); // Log the actual error
     return res.status(500).json({
