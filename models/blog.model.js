@@ -1,55 +1,66 @@
 import mongoose from "mongoose";
 
-const blogSchema = new mongoose.Schema({
+const blogSchema = new mongoose.Schema(
+  {
     title: {
-        type: String,
-        required: true,
-        trim: true,
+      type: String,
+      required: true,
+      trim: true,
     },
     slug: {
-        type: String,
-        unique: true,
-        trim: true,
-        lowercase: true,
-        index: true,
+      type: String,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      index: true,
+    },
+    keywords: {
+      type: String,
+      trim: true,
     },
     description: {
-        type: String,
-        trim: true,
+      type: String,
+      trim: true,
     },
     thumbnail: {
-        type: String,
+      type: String,
     },
     author: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     category: {
-        type: String,
-        trim: true,
+      type: String,
+      trim: true,
     },
-    likes: [{
+    likes: [
+      {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-    }],
-    comments: [{
+      },
+    ],
+    comments: [
+      {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Comment",
-    }],
+      },
+    ],
     isPublished: {
-        type: Boolean,
-        default: false,
+      type: Boolean,
+      default: false,
     },
-}, { timestamps: true });
+  },
+  { timestamps: true },
+);
 
 // Virtual for URL
-blogSchema.virtual('url').get(function() {
-    return `/blog/${this.slug}`;
+blogSchema.virtual("url").get(function () {
+  return `/blog/${this.slug}`;
 });
 
-blogSchema.set('toJSON', { virtuals: true });
-blogSchema.set('toObject', { virtuals: true });
+blogSchema.set("toJSON", { virtuals: true });
+blogSchema.set("toObject", { virtuals: true });
 
 const Blog = mongoose.model("Blog", blogSchema);
 export default Blog;

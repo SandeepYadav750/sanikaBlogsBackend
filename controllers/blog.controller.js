@@ -26,7 +26,7 @@ async function generateUniqueSlug(title) {
 
 export const createBlog = async (req, res) => {
   try {
-    const { title, description, category, isPublished } = req.body;
+    const { title, keywords, description, category, isPublished } = req.body;
     const author = req.id;
 
     // Validate required fields
@@ -53,6 +53,7 @@ export const createBlog = async (req, res) => {
     const blog = await Blog.create({
       title,
       slug, // ← Generated slug
+      keywords,
       description,
       thumbnail: thumbImage?.secure_url,
       author: author,
@@ -80,7 +81,7 @@ export const updateBlog = async (req, res) => {
     const blogId = req.params.blogId;
     const file = req.file;
 
-    const { title, description, category } = req.body;
+    const { title, keywords, description, category } = req.body;
 
     const blog = await Blog.findById(blogId);
     if (!blog) {
@@ -104,6 +105,7 @@ export const updateBlog = async (req, res) => {
     const updateData = {
       title,
       slug,
+      keywords,
       description,
       category,
       thumbnail: thumbImage?.secure_url,
