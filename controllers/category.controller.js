@@ -53,9 +53,6 @@ export const getAllCategories = async (req, res) => {
     const myCategory = await Category.find({ userId }).select("_id");
     const myCategorys = myCategory.map((category) => category._id);
 
-    console.log("myCategory", myCategory);
-    console.log("myCategorys", myCategorys);
-
     if (myCategorys.length === 0) {
       return res.status(200).json({
         message: "No categories found for this user",
