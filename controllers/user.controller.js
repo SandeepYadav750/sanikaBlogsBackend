@@ -34,15 +34,33 @@ export const register = async (req, res) => {
         .json({ success: false, message: "Email already in use" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       firstName,
       lastName,
       email,
       password: hashedPassword,
     });
-    res
-      .status(201)
-      .json({ success: true, message: "User registered successfully", user });
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d", // token expires in 7 days
+    });
+    // FIXED: Cookie options for cross-domain production
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true, // Required for HTTPS
+      sameSite: "none", // Required for cross-site requests
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+      // REMOVE domain: ".onrender.com" - Let it be automatic
+    };
+
+    res.status(201).cookie("token", token, cookieOptions).json({
+      success: true,
+      message: "User registered successfully",
+      user,
+      token,
+    });
   } catch (error) {
     console.error("Error registering user:", error);
 
@@ -60,7 +78,7 @@ export const login = async (req, res) => {
         .status(400)
         .json({ message: "Email and password are required" });
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).lean();
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
@@ -80,12 +98,7 @@ export const login = async (req, res) => {
       sameSite: "none", // Required for cross-site requests
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
-      // REMOVE domain: ".onrender.com" - Let it be automatic
     };
-
-    // Log to debug
-    console.log("Setting cookie with options:", cookieOptions);
-    console.log("Frontend origin:", req.headers.origin);
 
     return res
       .status(200)
@@ -217,7 +230,7 @@ export const updateProfile = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // exclude password field
+    const users = await User.find().select("-password").lean(); // exclude password field
 
     res.status(200).json({
       success: true,
@@ -239,7 +252,7 @@ export const getAllUsers = async (req, res) => {
 
 export const getVerify = async (req, res) => {
   try {
-    const user = await User.findById(req.id).select("-password");
+    const user = await User.findById(req.id).select("-password").lean();
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ message: "Verification failed" });
