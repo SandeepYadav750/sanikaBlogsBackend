@@ -15,7 +15,7 @@ export const createCategory = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized", success: false });
     }
 
-    const existingCategory = await Category.findOne({ name: name.trim() });
+    const existingCategory = await Category.findOne({ name: name.trim() }).lean();
     if (existingCategory) {
       return res
         .status(400)
@@ -50,7 +50,7 @@ export const getAllCategories = async (req, res) => {
     const userId = req.id;
 
     //FIND ALL Category POST CreATED BY THE LOGGED IN USER
-    const myCategory = await Category.find({ userId }).select("_id");
+    const myCategory = await Category.find({ userId }).select("_id").lean();
     const myCategorys = myCategory.map((category) => category._id);
 
     if (myCategorys.length === 0) {
@@ -70,6 +70,29 @@ export const getAllCategories = async (req, res) => {
       message: "Categories retrieved successfully",
       success: true,
       data: categories,
+      totalCategories: categories.length,
+    });
+  } catch (error) {
+    console.error("Error retrieving categories:", error);
+    return res.status(500).json({
+      message: "Failed to retrieve categories",
+      success: false,
+    });
+  }
+};
+
+export const getAllUsersCategories = async (req, res) => {
+  try {
+    // Fetch ALL categories from database
+    const categories = await Category.find({})
+      .populate("userId", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .lean(); // Optional: sort by newest first
+
+    return res.status(200).json({
+      message: "All Categories retrieved successfully",
+      success: true,
+      categories,
       totalCategories: categories.length,
     });
   } catch (error) {
@@ -134,7 +157,7 @@ export const deleteCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
     const userId = req.id;
-    const category = await Category.findById(categoryId);
+    const category = await Category.findById(categoryId).lean();
 
     if (!category) {
       return res.status(404).json({

@@ -55,7 +55,8 @@ export const getCommentsByPostId = async (req, res) => {
         path: "userId",
         select: "firstName lastName photoURL",
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     if (!comments) {
       return res.status(404).json({
@@ -81,7 +82,7 @@ export const deleteComment = async (req, res) => {
   try {
     const commentId = req.params.id;
     const userId = req.id;
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId).lean();
 
     if (!comment) {
       return res.status(404).json({
@@ -199,7 +200,7 @@ export const getAllCommentOnMyBlogs = async (req, res) => {
     const userId = req.id;
 
     //FIND ALL BLOGS POST CERATED BY THE LOGGED IN USER
-    const myBlogs = await Blog.find({ author: userId }).select("_id");
+    const myBlogs = await Blog.find({ author: userId }).select("_id").lean();
     const myBlogIds = myBlogs.map((blog) => blog._id);
 
     if (myBlogIds.length === 0) {

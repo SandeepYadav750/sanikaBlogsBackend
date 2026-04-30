@@ -83,7 +83,7 @@ export const updateBlog = async (req, res) => {
 
     const { title, keywords, description, category } = req.body;
 
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(blogId).lean();
     if (!blog) {
       return res
         .status(404)
@@ -142,7 +142,7 @@ export const listBlog = async (req, res) => {
     const blogs = await Blog.find({ author: userId }).populate({
       path: "author",
       select: "firstName lastName photoURL occupation",
-    });
+    }).lean();
 
     if (!blogs) {
       return res
@@ -162,7 +162,7 @@ export const deleteBlog = async (req, res) => {
   try {
     const blogId = req.params.id;
     const userId = req.id;
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(blogId).lean();
 
     if (!blog) {
       return res
@@ -198,7 +198,7 @@ export const getPublishedBlog = async (_, res) => {
       .populate({
         path: "author",
         select: "firstName lastName photoURL occupation",
-      });
+      }).lean();
 
     if (!blogs) {
       res.status(401).json({ message: "Blogs not found" });
@@ -293,7 +293,7 @@ export const disLikeBlog = async (req, res) => {
 export const getMyTotalBlocks = async (req, res) => {
   try {
     const userId = req.id;
-    const myBlogs = await Blog.find({ author: userId }).select("likes");
+    const myBlogs = await Blog.find({ author: userId }).select("likes").lean();
     const totalLikes = myBlogs.reduce(
       (acc, blog) => acc + (blog.likes?.length || 0),
       0,
