@@ -46,6 +46,10 @@ app.use("/api/blog", blogRoute);
 app.use("/api/comment", commentRoute);
 app.use("/api/category", categoryRoute);
 
+app.get("/api/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 const PORT = process.env.PORT || 3000;
 connectDB().then(() => {
   app.listen(PORT, () => {
